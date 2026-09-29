@@ -1,97 +1,87 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
-const filePath = path.join(process.cwd(), 'boletos.json');
+// Inicializar cliente
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
-  try {
-    const data = await fs.readFile(filePath, 'utf-8');
-    return NextResponse.json(JSON.parse(data));
-  } catch (error) {
-    return NextResponse.json({ error: 'Error leyendo la base de datos' }, { status: 500 });
-  }
+  const { data, error } = await supabase
+    .from('boletos')
+    .select('*')
+    .order('NumeroBoleto', { ascending: true });
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
 }
 
 export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { numerosBoletos, NombreComprador, NumeroTelefonoComprador, Vendedor } = body; 
+  const body = await request.json();
+  const { numerosBoletos, NombreComprador, NumeroTelefonoComprador, Vendedor } = body;
 
-    const data = await fs.readFile(filePath, 'utf-8');
-    let boletos = JSON.parse(data);
+  // Actualización atómica: Solo actualiza si el estado actual es 'Disponible'
+  const { data, error } = await supabase
+    .from('boletos')
+    .update({
+      EstadoBoleto: 'Vendido',
+      NombreComprador,
+      NumeroTelefonoComprador,
+      Vendedor,
+      Entregado: false
+    })
+    .in('NumeroBoleto', numerosBoletos)
+    .eq('EstadoBoleto', 'Disponible') 
+    .select();
 
-    for (const num of numerosBoletos) {
-      const index = boletos.findIndex((b: any) => b.NumeroBoleto === Number(num));
-      if (index === -1) return NextResponse.json({ error: `Boleto #${num} no existe (1-700)` }, { status: 404 });
-      if (boletos[index].EstadoBoleto === 'Vendido') return NextResponse.json({ error: `El boleto #${num} ya está vendido` }, { status: 400 });
-    }
+  if (error) return NextResponse.json({ error: 'Error en la base de datos' }, { status: 500 });
 
-    numerosBoletos.forEach((num: number) => {
-      const index = boletos.findIndex((b: any) => b.NumeroBoleto === Number(num));
-      boletos[index].EstadoBoleto = 'Vendido';
-      boletos[index].NombreComprador = NombreComprador;
-      boletos[index].NumeroTelefonoComprador = NumeroTelefonoComprador;
-      boletos[index].Vendedor = Vendedor; // Se registra el vendedor
-      boletos[index].Entregado = false; 
-    });
-
-    await fs.writeFile(filePath, JSON.stringify(boletos, null, 2), 'utf-8');
-    return NextResponse.json({ success: true, message: 'Venta registrada con éxito' });
-  } catch (error) {
-    return NextResponse.json({ error: 'Error procesando la venta' }, { status: 500 });
+  // Validación de concurrencia: Si la longitud no coincide, alguien más compró uno de esos números milisegundos antes
+  if (!data || data.length !== numerosBoletos.length) {
+    return NextResponse.json(
+      { error: 'Uno o varios de los boletos seleccionados acaban de ser vendidos o no existen.' },
+      { status: 400 }
+    );
   }
+
+  return NextResponse.json({ success: true, message: 'Venta registrada con éxito' });
 }
 
 export async function PATCH(request: Request) {
-  try {
-    const body = await request.json();
-    const { NumeroBoleto } = body;
+  const body = await request.json();
+  const { NumeroBoleto } = body;
 
-    const data = await fs.readFile(filePath, 'utf-8');
-    let boletos = JSON.parse(data);
+  const { data, error } = await supabase
+    .from('boletos')
+    .update({ Entregado: true })
+    .eq('NumeroBoleto', Number(NumeroBoleto))
+    .eq('EstadoBoleto', 'Vendido')
+    .eq('Entregado', false)
+    .select()
+    .single();
 
-    const index = boletos.findIndex((b: any) => b.NumeroBoleto === Number(NumeroBoleto));
-    
-    if (index === -1) return NextResponse.json({ error: 'Boleto no encontrado' }, { status: 404 });
-    if (boletos[index].EstadoBoleto !== 'Vendido') return NextResponse.json({ error: 'Este boleto no ha sido vendido aún' }, { status: 400 });
-    if (boletos[index].Entregado) return NextResponse.json({ error: 'La comida de este boleto ya fue entregada' }, { status: 400 });
-
-    boletos[index].Entregado = true;
-
-    await fs.writeFile(filePath, JSON.stringify(boletos, null, 2), 'utf-8');
-    return NextResponse.json({ success: true, boleto: boletos[index] });
-  } catch (error) {
-    return NextResponse.json({ error: 'Error procesando la entrega' }, { status: 500 });
+  if (error || !data) {
+    return NextResponse.json({ error: 'Boleto inválido, no vendido, o ya entregado' }, { status: 400 });
   }
+
+  return NextResponse.json({ success: true, boleto: data });
 }
 
 export async function DELETE(request: Request) {
-  try {
-    const body = await request.json();
-    const { NumeroBoleto } = body;
+  const body = await request.json();
+  const { NumeroBoleto } = body;
 
-    const data = await fs.readFile(filePath, 'utf-8');
-    let boletos = JSON.parse(data);
+  const { error } = await supabase
+    .from('boletos')
+    .update({
+      EstadoBoleto: 'Disponible',
+      NombreComprador: '',
+      NumeroTelefonoComprador: '',
+      Vendedor: '',
+      Entregado: false
+    })
+    .eq('NumeroBoleto', Number(NumeroBoleto));
 
-    const index = boletos.findIndex((b: any) => b.NumeroBoleto === Number(NumeroBoleto));
-    
-    if (index === -1) {
-      return NextResponse.json({ error: 'Boleto no encontrado' }, { status: 404 });
-    }
-
-    // Revertir al estado original
-    boletos[index].EstadoBoleto = 'Disponible';
-    boletos[index].NombreComprador = '';
-    boletos[index].NumeroTelefonoComprador = '';
-    boletos[index].Vendedor = '';
-    boletos[index].Entregado = false;
-
-    // Guardar cambios
-    await fs.writeFile(filePath, JSON.stringify(boletos, null, 2), 'utf-8');
-    
-    return NextResponse.json({ success: true, message: 'Registro eliminado con éxito' });
-  } catch (error) {
-    return NextResponse.json({ error: 'Error al intentar eliminar el registro' }, { status: 500 });
-  }
+  if (error) return NextResponse.json({ error: 'Error eliminando el registro' }, { status: 500 });
+  return NextResponse.json({ success: true, message: 'Registro eliminado' });
 }
