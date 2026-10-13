@@ -85,3 +85,31 @@ export async function DELETE(request: Request) {
   if (error) return NextResponse.json({ error: 'Error eliminando el registro' }, { status: 500 });
   return NextResponse.json({ success: true, message: 'Registro eliminado' });
 }
+
+// NUEVO MÉTODO PARA ACTUALIZAR (EDITAR) EL REGISTRO
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { NumeroBoleto, NombreComprador, NumeroTelefonoComprador, Vendedor, BoletoPagado } = body;
+
+    const { data, error } = await supabase
+      .from('boletos')
+      .update({
+        NombreComprador,
+        NumeroTelefonoComprador,
+        Vendedor,
+        BoletoPagado
+      })
+      .eq('NumeroBoleto', Number(NumeroBoleto))
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: 'Error al actualizar el registro en la base de datos' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, boleto: data });
+  } catch (error) {
+    return NextResponse.json({ error: 'Error procesando la actualización' }, { status: 500 });
+  }
+}
