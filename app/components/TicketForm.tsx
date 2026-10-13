@@ -5,6 +5,7 @@ export default function TicketForm({ onTicketSold }: { onTicketSold: () => void 
   const [nombre, setNombre] = useState('');
   const [telefono, setTelefono] = useState('');
   const [vendedor, setVendedor] = useState('');
+  const [pagado, setPagado] = useState('si'); // Nuevo estado, default a "si"
   const [mensaje, setMensaje] = useState({ text: '', type: '' });
   const [loading, setLoading] = useState(false);
 
@@ -51,7 +52,8 @@ export default function TicketForm({ onTicketSold }: { onTicketSold: () => void 
         numerosBoletos: boletosUnicos, 
         NombreComprador: nombre, 
         NumeroTelefonoComprador: telefono,
-        Vendedor: vendedor // Nuevo campo enviado
+        Vendedor: vendedor,
+        BoletoPagado: pagado === 'si' // Conversión a booleano
       }),
     });
 
@@ -65,7 +67,7 @@ export default function TicketForm({ onTicketSold }: { onTicketSold: () => void 
       setNumeros('');
       setNombre('');
       setTelefono('');
-      // No borramos el nombre del vendedor intencionalmente para agilizar ventas consecutivas
+      setPagado('si');
       onTicketSold();
     }
   };
@@ -74,56 +76,51 @@ export default function TicketForm({ onTicketSold }: { onTicketSold: () => void 
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-orange-900 mb-1">
-            Números de Boletos (Separados por coma)
-          </label>
+          <label className="block text-sm font-medium text-orange-900 mb-1">Números de Boletos</label>
           <input
-            type="text"
-            required
-            value={numeros}
-            onChange={handleNumerosChange}
+            type="text" required value={numeros} onChange={handleNumerosChange}
             className="w-full px-4 py-2 rounded-lg border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-gray-900"
-            placeholder="Ej: 145, 146, 147"
+            placeholder="Ej: 145, 146"
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-orange-900 mb-1">Nombre del Comprador</label>
           <input
-            type="text"
-            required
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
+            type="text" required value={nombre} onChange={(e) => setNombre(e.target.value)}
             className="w-full px-4 py-2 rounded-lg border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-gray-900"
             placeholder="Juan Pérez"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-orange-900 mb-1">Número de Teléfono</label>
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            required
-            value={telefono}
-            onChange={handleTelefonoChange}
-            className="w-full px-4 py-2 rounded-lg border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-gray-900"
-            placeholder="Ej: 0991234567"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-orange-900 mb-1">Teléfono</label>
+            <input
+              type="text" inputMode="numeric" pattern="[0-9]*" required value={telefono} onChange={handleTelefonoChange}
+              className="w-full px-4 py-2 rounded-lg border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-gray-900"
+              placeholder="0991234567"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-orange-900 mb-1">¿Boleto Pagado?</label>
+            <select
+              value={pagado} onChange={(e) => setPagado(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-gray-900 bg-white"
+            >
+              <option value="si">Sí, ya está pagado</option>
+              <option value="no">No, pago pendiente</option>
+            </select>
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-orange-900 mb-1">Vendido por</label>
           <input
-            type="text"
-            required
-            value={vendedor}
-            onChange={(e) => setVendedor(e.target.value)}
+            type="text" required value={vendedor} onChange={(e) => setVendedor(e.target.value)}
             className="w-full px-4 py-2 rounded-lg border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-gray-900"
-            placeholder="Nombre de quien vendió el boleto"
+            placeholder="Nombre del vendedor"
           />
         </div>
         <button
-          type="submit"
-          disabled={loading}
+          type="submit" disabled={loading}
           className="w-full bg-[#FFB085] hover:bg-[#FF9B6A] text-orange-950 font-bold py-2 px-4 rounded-lg transition-colors mt-2"
         >
           {loading ? 'Procesando...' : 'Registrar Venta'}

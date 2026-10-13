@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Inicializar cliente
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -18,9 +17,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { numerosBoletos, NombreComprador, NumeroTelefonoComprador, Vendedor } = body;
+  // Se recibe BoletoPagado
+  const { numerosBoletos, NombreComprador, NumeroTelefonoComprador, Vendedor, BoletoPagado } = body;
 
-  // Actualización atómica: Solo actualiza si el estado actual es 'Disponible'
   const { data, error } = await supabase
     .from('boletos')
     .update({
@@ -28,6 +27,7 @@ export async function POST(request: Request) {
       NombreComprador,
       NumeroTelefonoComprador,
       Vendedor,
+      BoletoPagado, // Nuevo campo
       Entregado: false
     })
     .in('NumeroBoleto', numerosBoletos)
@@ -36,7 +36,6 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: 'Error en la base de datos' }, { status: 500 });
 
-  // Validación de concurrencia: Si la longitud no coincide, alguien más compró uno de esos números milisegundos antes
   if (!data || data.length !== numerosBoletos.length) {
     return NextResponse.json(
       { error: 'Uno o varios de los boletos seleccionados acaban de ser vendidos o no existen.' },
@@ -78,6 +77,7 @@ export async function DELETE(request: Request) {
       NombreComprador: '',
       NumeroTelefonoComprador: '',
       Vendedor: '',
+      BoletoPagado: false, // Se resetea el campo
       Entregado: false
     })
     .eq('NumeroBoleto', Number(NumeroBoleto));
