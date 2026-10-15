@@ -11,7 +11,6 @@ export default function TicketTable({ boletos, onTicketUpdated }: { boletos: any
 
   const [procesando, setProcesando] = useState<number | null>(null);
   
-  // Estados para la Edición en línea
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({
     NombreComprador: '',
@@ -50,7 +49,6 @@ export default function TicketTable({ boletos, onTicketUpdated }: { boletos: any
     setCurrentPage(1);
   };
 
-  // Funciones de Eliminación y Edición
   const handleDelete = async (numeroBoleto: number) => {
     const confirmar = window.confirm(`¿Eliminar el registro del boleto #${numeroBoleto}? Volverá a estar "Disponible".`);
     if (!confirmar) return;
@@ -102,9 +100,11 @@ export default function TicketTable({ boletos, onTicketUpdated }: { boletos: any
     }
   };
 
+  // Obtenemos el dominio actual de manera dinámica para inyectarlo en el link de WhatsApp
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+
   return (
     <div className="space-y-4">
-      {/* Controles de Búsqueda y Filtros */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div className="relative col-span-1 md:col-span-1">
           <input
@@ -129,7 +129,6 @@ export default function TicketTable({ boletos, onTicketUpdated }: { boletos: any
         </select>
       </div>
 
-      {/* Tabla */}
       <div className="bg-white rounded-2xl shadow-sm border border-orange-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -140,7 +139,7 @@ export default function TicketTable({ boletos, onTicketUpdated }: { boletos: any
                 <th className="p-4 font-semibold min-w-[120px]">Vendedor</th>
                 <th className="p-4 font-semibold text-center whitespace-nowrap">Pago</th>
                 <th className="p-4 font-semibold text-center whitespace-nowrap">Entrega</th>
-                <th className="p-4 font-semibold text-center whitespace-nowrap">Contacto / Tel</th>
+                <th className="p-4 font-semibold text-center whitespace-nowrap min-w-[100px]">Contacto / Tel</th>
                 <th className="p-4 font-semibold text-center whitespace-nowrap min-w-[120px]">Acción</th>
               </tr>
             </thead>
@@ -160,7 +159,6 @@ export default function TicketTable({ boletos, onTicketUpdated }: { boletos: any
                     <tr key={boleto.NumeroBoleto} className={`border-b border-gray-50 hover:bg-orange-50/50 ${isEditing ? 'bg-orange-50/80' : ''}`}>
                       <td className="p-4 font-medium text-orange-950">#{boleto.NumeroBoleto}</td>
                       
-                      {/* Fila en modo Edición o modo Lectura */}
                       {isEditing ? (
                         <>
                           <td className="p-2"><input type="text" value={editForm.NombreComprador} onChange={e => setEditForm({...editForm, NombreComprador: e.target.value})} className="w-full px-2 py-1.5 border border-orange-300 rounded focus:ring-2 focus:ring-orange-400 focus:outline-none" /></td>
@@ -202,9 +200,16 @@ export default function TicketTable({ boletos, onTicketUpdated }: { boletos: any
                           </td>
                           <td className="p-4 text-center">
                             {boleto.NumeroTelefonoComprador && (
-                              <a href={`https://wa.me/${boleto.NumeroTelefonoComprador}`} target="_blank" rel="noopener noreferrer" className="inline-block bg-[#25D366] text-white py-1 px-3 rounded-full text-xs font-medium hover:bg-green-600 transition-colors">
-                                WA
-                              </a>
+                              <div className="flex justify-center">
+                                <a 
+                                  href={`https://wa.me/${boleto.NumeroTelefonoComprador}?text=${encodeURIComponent(`¡Hola ${boleto.NombreComprador}! 🍲 Gracias por apoyar nuestra comida solidaria. Para agilizar tu pedido, indícanos si pasarás retirando tus platos por el local o si necesitas envío a domicilio ingresando aquí: ${baseUrl}/entrega/${boleto.CompraId}`)}`}
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="inline-block bg-[#25D366] text-white py-1 px-3 rounded-full text-xs font-medium hover:bg-green-600 transition-colors shadow-sm"
+                                >
+                                  Notificar
+                                </a>
+                              </div>
                             )}
                           </td>
                           <td className="p-4 text-center flex justify-center gap-2">
@@ -225,7 +230,6 @@ export default function TicketTable({ boletos, onTicketUpdated }: { boletos: any
           </table>
         </div>
         
-        {/* Paginación y Contadores */}
         <div className="bg-orange-50/50 p-4 border-t border-orange-100 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-sm text-orange-800 font-medium">
             Mostrando <span className="font-bold">{boletosFiltrados.length === 0 ? 0 : indexOfFirstRecord + 1}</span> a <span className="font-bold">{Math.min(indexOfLastRecord, boletosFiltrados.length)}</span> de <span className="font-bold">{boletosFiltrados.length}</span> registros filtrados

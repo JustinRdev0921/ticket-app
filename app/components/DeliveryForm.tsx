@@ -24,7 +24,7 @@ export default function DeliveryForm({ onDelivery }: { onDelivery: () => void })
     const res = await fetch('/api/boletos', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ NumeroBoleto: numero }),
+      body: JSON.stringify({ action: 'despachar', NumeroBoleto: numero }),
     });
 
     const data = await res.json();

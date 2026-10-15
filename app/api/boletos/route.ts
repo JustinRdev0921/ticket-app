@@ -17,8 +17,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  // Se recibe BoletoPagado
   const { numerosBoletos, NombreComprador, NumeroTelefonoComprador, Vendedor, BoletoPagado } = body;
+  
+  // Generamos un ID único para toda esta transacción
+  const compraId = crypto.randomUUID();
 
   const { data, error } = await supabase
     .from('boletos')
@@ -27,8 +29,9 @@ export async function POST(request: Request) {
       NombreComprador,
       NumeroTelefonoComprador,
       Vendedor,
-      BoletoPagado, // Nuevo campo
-      Entregado: false
+      BoletoPagado,
+      Entregado: false,
+      CompraId: compraId // Asignamos el mismo ID a todos los boletos de esta compra
     })
     .in('NumeroBoleto', numerosBoletos)
     .eq('EstadoBoleto', 'Disponible') 
@@ -48,22 +51,39 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   const body = await request.json();
-  const { NumeroBoleto } = body;
+  const { action, CompraId, MetodoEntrega, CoordenadasGPS, DireccionManual, NumeroBoleto } = body;
 
-  const { data, error } = await supabase
-    .from('boletos')
-    .update({ Entregado: true })
-    .eq('NumeroBoleto', Number(NumeroBoleto))
-    .eq('EstadoBoleto', 'Vendido')
-    .eq('Entregado', false)
-    .select()
-    .single();
+  // Acción 1: El cliente desde la web pública guarda su ubicación
+  if (action === 'guardarUbicacion') {
+    const { data, error } = await supabase
+      .from('boletos')
+      .update({ MetodoEntrega, CoordenadasGPS, DireccionManual })
+      .eq('CompraId', CompraId)
+      .select();
 
-  if (error || !data) {
-    return NextResponse.json({ error: 'Boleto inválido, no vendido, o ya entregado' }, { status: 400 });
+    if (error) return NextResponse.json({ error: 'Error guardando datos de entrega' }, { status: 500 });
+    return NextResponse.json({ success: true, actualizados: data.length });
   }
 
-  return NextResponse.json({ success: true, boleto: data });
+  // Acción 2: Despacho físico de un plato el día del evento
+  if (action === 'despachar' || !action) {
+    const { data, error } = await supabase
+      .from('boletos')
+      .update({ Entregado: true })
+      .eq('NumeroBoleto', Number(NumeroBoleto))
+      .eq('EstadoBoleto', 'Vendido')
+      .eq('Entregado', false)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return NextResponse.json({ error: 'Boleto inválido, no vendido, o ya entregado' }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, boleto: data });
+  }
+
+  return NextResponse.json({ error: 'Acción no válida' }, { status: 400 });
 }
 
 export async function DELETE(request: Request) {
@@ -77,8 +97,12 @@ export async function DELETE(request: Request) {
       NombreComprador: '',
       NumeroTelefonoComprador: '',
       Vendedor: '',
-      BoletoPagado: false, // Se resetea el campo
-      Entregado: false
+      BoletoPagado: false,
+      Entregado: false,
+      CompraId: null,
+      MetodoEntrega: 'Pendiente',
+      CoordenadasGPS: '',
+      DireccionManual: ''
     })
     .eq('NumeroBoleto', Number(NumeroBoleto));
 
@@ -86,7 +110,6 @@ export async function DELETE(request: Request) {
   return NextResponse.json({ success: true, message: 'Registro eliminado' });
 }
 
-// NUEVO MÉTODO PARA ACTUALIZAR (EDITAR) EL REGISTRO
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
