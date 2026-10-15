@@ -56,7 +56,7 @@ export default function PaginaEntrega() {
       <div className="max-w-md w-full bg-white p-8 rounded-3xl shadow-sm border border-orange-100 text-center">
         
         <div className="text-5xl mb-4">🍲</div>
-        <h1 className="text-2xl font-extrabold mb-2">Comida Solidaria</h1>
+        <h1 className="text-2xl font-extrabold mb-2">Hornado Solidario</h1>
         <p className="text-orange-700 mb-8 text-sm">Ayúdanos a organizar tu entrega para que todo llegue perfecto.</p>
 
         {paso === 1 && (
@@ -66,7 +66,7 @@ export default function PaginaEntrega() {
               disabled={loading}
               className="w-full bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-900 font-bold py-4 px-4 rounded-xl transition-colors"
             >
-              🏪 Pasaré retirando por el local
+              🏪 Pasaré retirando por el lugar
             </button>
             <div className="relative flex items-center py-2">
               <div className="flex-grow border-t border-gray-200"></div>
@@ -115,7 +115,7 @@ export default function PaginaEntrega() {
           <div className="animate-in fade-in zoom-in duration-500">
             <div className="text-5xl mb-4">✅</div>
             <h2 className="text-xl font-bold text-green-700 mb-2">¡Preferencia Registrada!</h2>
-            <p className="text-orange-700 text-sm">Muchas gracias. Ya tenemos todo organizado para tu comida. Puedes cerrar esta ventana.</p>
+            <p className="text-orange-700 text-sm">Muchas gracias. Ya tenemos todo organizado para tu Hornado. Puedes cerrar esta ventana.</p>
           </div>
         )}
 
