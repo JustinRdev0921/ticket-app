@@ -329,7 +329,7 @@ export default function TicketTable({
                                       ? "593" +
                                         boleto.NumeroTelefonoComprador.slice(1)
                                       : boleto.NumeroTelefonoComprador
-                                  }?text=${encodeURIComponent(`¡Hola ${boleto.NombreComprador}! 🍲 Gracias por apoyar nuestra comida solidaria.\n\n📍 Te esperamos el sábado 17 de octubre a partir de las 10:00 a.m. en: https://maps.app.goo.gl/hMjA3pJr2s3sW3rH7\n\nPara agilizar tu pedido, por favor indícanos si prefieres envío a domicilio ingresando aquí: ${baseUrl}/entrega/${boleto.CompraId}`)}`}
+                                  }?text=${encodeURIComponent(`¡Hola ${boleto.NombreComprador}! 🍲 Gracias por apoyar nuestro hornado solidario.\n\n📍 Te esperamos el sábado 17 de octubre a partir de las 10:00 a.m. en: https://maps.app.goo.gl/hMjA3pJr2s3sW3rH7\n\nPara agilizar tu pedido, por favor indícanos si prefieres envío a domicilio ingresando aquí: ${baseUrl}/entrega/${boleto.CompraId}`)}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="inline-block bg-[#25D366] text-white py-1 px-3 rounded-full text-xs font-medium hover:bg-green-600 transition-colors shadow-sm"
