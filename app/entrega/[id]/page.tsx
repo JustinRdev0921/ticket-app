@@ -44,7 +44,7 @@ export default function PaginaEntrega() {
         guardarPreferencia('Domicilio', coords, '');
       },
       (error) => {
-        alert("No pudimos obtener tu ubicación. Por favor, usa la opción de escribir la dirección manual.");
+        alert("No pudimos obtener tu ubicación. Por favor activa el GPS en tu celular o usa la opción de escribir la dirección manual.");
         setLoading(false);
       },
       { enableHighAccuracy: true }
