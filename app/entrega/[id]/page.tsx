@@ -61,18 +61,7 @@ export default function PaginaEntrega() {
 
         {paso === 1 && (
           <div className="space-y-4">
-            <button 
-              onClick={() => guardarPreferencia('Local')}
-              disabled={loading}
-              className="w-full bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-900 font-bold py-4 px-4 rounded-xl transition-colors"
-            >
-              🏪 Pasaré retirando por el lugar
-            </button>
-            <div className="relative flex items-center py-2">
-              <div className="flex-grow border-t border-gray-200"></div>
-              <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">O si prefieres</span>
-              <div className="flex-grow border-t border-gray-200"></div>
-            </div>
+
             <button 
               onClick={capturarGPS}
               disabled={loading}
@@ -85,6 +74,19 @@ export default function PaginaEntrega() {
               className="text-orange-600 font-medium text-sm mt-4 underline underline-offset-2"
             >
               Escribir dirección manual / Pegar link de Google Maps
+            </button>
+
+            <div className="relative flex items-center py-2">
+              <div className="flex-grow border-t border-gray-200"></div>
+              <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">O si prefieres</span>
+              <div className="flex-grow border-t border-gray-200"></div>
+            </div>
+                        <button 
+              onClick={() => guardarPreferencia('Local')}
+              disabled={loading}
+              className="w-full bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-900 font-bold py-4 px-4 rounded-xl transition-colors"
+            >
+              🏪 Pasaré retirando por el lugar
             </button>
           </div>
         )}

@@ -322,7 +322,14 @@ export default function TicketTable({
                             {boleto.NumeroTelefonoComprador && (
                               <div className="flex justify-center">
                                 <a
-                                  href={`https://wa.me/${boleto.NumeroTelefonoComprador}?text=${encodeURIComponent(`¡Hola ${boleto.NombreComprador}! 🍲 Gracias por apoyar nuestro Hornado solidario.\n\n📍 Te esperamos en: https://maps.app.goo.gl/5aVqM158E4JTF62p7\n\nPara agilizar tu pedido, indícanos si pasarás retirando tus platos por el lugar o si necesitas envío a domicilio ingresando aquí: ${baseUrl}/entrega/${boleto.CompraId}`)}`}
+                                  href={`https://wa.me/${
+                                    boleto.NumeroTelefonoComprador.startsWith(
+                                      "0",
+                                    )
+                                      ? "593" +
+                                        boleto.NumeroTelefonoComprador.slice(1)
+                                      : boleto.NumeroTelefonoComprador
+                                  }?text=${encodeURIComponent(`¡Hola ${boleto.NombreComprador}! 🍲 Gracias por apoyar nuestra comida solidaria.\n\n📍 Te esperamos en: [AQUÍ_TU_DIRECCIÓN_O_LINK_DE_MAPS]\n\nPara agilizar tu pedido, por favor indícanos si necesitas envío a domicilio ingresando aquí: ${baseUrl}/entrega/${boleto.CompraId}`)}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="inline-block bg-[#25D366] text-white py-1 px-3 rounded-full text-xs font-medium hover:bg-green-600 transition-colors shadow-sm"
