@@ -138,7 +138,7 @@ export default function Home() {
                   <p className="text-orange-700">Registra los boletos al entregar los platos</p>
                 </header>
                 <div className="max-w-sm mx-auto">
-                  <DeliveryForm onDelivery={fetchBoletos} />
+                  <DeliveryForm boletos={boletos} onDelivery={fetchBoletos} />
                 </div>
               </div>
             )}

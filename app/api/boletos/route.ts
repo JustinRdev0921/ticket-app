@@ -51,7 +51,7 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   const body = await request.json();
-  const { action, CompraId, MetodoEntrega, CoordenadasGPS, DireccionManual, NumeroBoleto } = body;
+  const { action, CompraId, MetodoEntrega, CoordenadasGPS, DireccionManual, NumeroBoleto, numerosBoletos } = body;
 
   // Acción 1: El cliente desde la web pública guarda su ubicación
   if (action === 'guardarUbicacion') {
@@ -65,22 +65,24 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ success: true, actualizados: data.length });
   }
 
-  // Acción 2: Despacho físico de un plato el día del evento
+  // Acción 2: Despacho físico masivo (NUEVO)
   if (action === 'despachar' || !action) {
+    // Soportamos envío individual o múltiple
+    const boletosADespachar = numerosBoletos || [Number(NumeroBoleto)];
+
     const { data, error } = await supabase
       .from('boletos')
       .update({ Entregado: true })
-      .eq('NumeroBoleto', Number(NumeroBoleto))
+      .in('NumeroBoleto', boletosADespachar)
       .eq('EstadoBoleto', 'Vendido')
       .eq('Entregado', false)
-      .select()
-      .single();
+      .select();
 
-    if (error || !data) {
-      return NextResponse.json({ error: 'Boleto inválido, no vendido, o ya entregado' }, { status: 400 });
+    if (error || !data || data.length === 0) {
+      return NextResponse.json({ error: 'Boletos inválidos, no vendidos o ya entregados' }, { status: 400 });
     }
 
-    return NextResponse.json({ success: true, boleto: data });
+    return NextResponse.json({ success: true, entregados: data.length });
   }
 
   return NextResponse.json({ error: 'Acción no válida' }, { status: 400 });
