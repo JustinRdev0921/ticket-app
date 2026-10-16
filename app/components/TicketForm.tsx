@@ -36,9 +36,9 @@ export default function TicketForm({ onTicketSold }: { onTicketSold: () => void 
       return;
     }
 
-    const invalidos = boletosArray.filter(n => n < 1 || n > 700);
+    const invalidos = boletosArray.filter(n => n < 1 || n > 720);
     if (invalidos.length > 0) {
-      setMensaje({ text: `Números fuera de rango (1-700): ${invalidos.join(', ')}`, type: 'error' });
+      setMensaje({ text: `Números fuera de rango (1-720): ${invalidos.join(', ')}`, type: 'error' });
       setLoading(false);
       return;
     }
